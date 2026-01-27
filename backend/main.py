@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from  backend.tle_fetcher import TLEFetcher
 import threading
+from sgp4 import Satellite, jday
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -139,13 +141,29 @@ def get_satellite_by_id(norad_id):
                             earth_radius = 6371  # km
                             perigee = a * (1 - e) - earth_radius
                             apogee = a * (1 + e) - earth_radius
+
+                            # Using sgp4 for exact x,y,z positions
+                            TLE_line1 = sat.get("tle_line1")
+                            TLE_line2 = sat.get("tle_line2")
+
+
+
+                            satellite = satellite.twoline2rv(TLE_line1, TLE_line2)
+                            now = datetime.utcnow()
+                            jd, fr = jday(now.year, now.month, now.day, now.hour, now.minute, now.second + now.microsecond * 1e-6)
+                            e, r, v = satellite.sgp4(jd, fr)
+
+                            
                             
                             sat["calculated"] = {
                                 "orbital_period_minutes": round(period, 2),
                                 "semi_major_axis_km": round(a, 2),
                                 "perigee_km": round(perigee, 2),
-                                "apogee_km": round(apogee, 2)
+                                "apogee_km": round(apogee, 2),
+                                "position_km": round(r, 2)
                             }
+
+                            
                         
                         return jsonify(sat)
     
