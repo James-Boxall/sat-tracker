@@ -45,67 +45,6 @@ const test_data = {
   "tle_line2": "2 25544  51.6319 275.1786 0011156  36.3768 323.7976 15.48229162549971"
 }
 
-const line_data = [[  747.40532078,  6705.27193918,   884.55605564],
-       [  309.5257385 ,  6790.70260114,   330.31569538],
-       [ -131.74075819,  6801.83146954,  -227.5496887 ],
-       [ -571.56673491,  6738.57335877,  -782.91997637],
-       [-1005.14554311,  6601.65965785, -1329.7088041 ],
-       [-1427.74436284,  6392.62834074, -1861.93089678],
-       [-1834.75610788,  6113.80485775, -2373.76787152],
-       [-2221.74956674,  5768.27427573, -2859.63171952],
-       [-2584.51720314,  5359.84515849, -3314.22523615],
-       [-2919.12010098,  4893.00578131, -3732.59874777],
-       [-3221.92960749,  4372.87335138, -4110.20257119],
-       [-3489.66529938,  3805.13695878, -4442.93473248],
-       [-3719.42896733,  3195.99501091, -4727.18356211],
-       [-3908.73437924,  2552.08790928, -4959.86486642],
-       [-4055.53264044,  1880.42671694, -5138.45344988],
-       [-4158.23301632,  1188.31854125, -5261.00882321],
-       [-4215.71912019,   483.28932745, -5326.19498043],
-       [-4227.36039556,  -226.99527061, -5333.29416172],
-       [-4193.01883981,  -934.81029988, -5282.21454195],
-       [-4113.05092753, -1632.45256866, -5173.4917986 ],
-       [-3988.30469985, -2312.32172907, -5008.28452315],
-       [-3820.11199413, -2967.00073896, -4788.36345056],
-       [-3610.27580098, -3589.3350331 , -4516.09449709],
-       [-3361.05275494, -4172.50969578, -4194.41562275],
-       [-3075.13079489, -4710.12388341, -3826.80757304],
-       [-2755.60207213, -5196.26170181, -3417.25860913],
-       [-2405.93123782, -5625.55870598, -2970.22340565],
-       [-2029.91930802, -5993.26316623, -2490.57638049],
-       [-1631.66338016, -6295.29124146, -1983.55981833],
-       [-1215.51255808, -6528.27522132, -1454.72725477],
-       [ -786.02052774, -6689.60404942,  -909.88269624],
-       [ -347.8953097 , -6777.45542047,  -355.01635503],
-       [   94.05320967, -6790.81885381,   203.76232582],
-       [  534.96730172, -6729.50928295,   760.29350395],
-       [  969.99625887, -6594.17085858,  1308.43671273],
-       [ 1394.3513542 , -6386.27083517,  1842.14063268],
-       [ 1803.36014572, -6108.08359116,  2355.51190475],
-       [ 2192.51938776, -5762.66500984,  2842.88204983],
-       [ 2557.54584587, -5353.81761622,  3298.87160427],
-       [ 2894.42436436, -4886.04701459,  3718.45064856],
-       [ 3199.45260116, -4364.5102991 ,  4096.9949917 ],
-       [ 3469.28192169, -3794.95720864,  4430.33737175],
-       [ 3700.95402335, -3183.66486913,  4714.81313678],
-       [ 3891.93294428, -2537.36700906,  4947.29997481],
-       [ 4040.13218641, -1863.17855333,  5125.2513603 ],
-       [ 4143.93675309, -1168.51649852,  5246.72347458],
-       [ 4202.21996235,  -461.01795795,  5310.39543537],
-       [ 4214.35494753,   251.54375857,  5315.58273554],
-       [ 4180.2207991 ,   961.34418971,  5262.24384447],
-       [ 4100.20333576,  1660.59307281,  5150.97996868],
-       [ 3975.19052284,  2341.61919403,  4983.02800615],
-       [ 3806.56258445,  2996.95393876,  4760.24676456],
-       [ 3596.17688591,  3619.41274042,  4485.09655198],
-       [ 3346.34769775,  4202.17361829,  4160.61229317],
-       [ 3059.82099439,  4738.85198617,  3790.37037814],
-       [ 2739.74448966,  5223.57090919,  3378.44951346],
-       [ 2389.63316904,  5651.02599076,  2929.38592031],
-       [ 2013.330642  ,  6016.54409189,  2448.12330522],
-       [ 1614.96670603,  6316.1351245 ,  1939.95811548],
-       [ 1198.91158263,  6546.53622206,  1410.48067843]]
-
 const test_data_2 = {
   "arg_of_pericenter": 12.9721,
   "bstar": 0.00033868,
@@ -183,8 +122,6 @@ const test_data_3 = {
   "tle_line1": "1 49271U 11037PF  26027.28786492  .00053860  00000+0  97839-1 0  9996",
   "tle_line2": "2 49271  51.6490  64.5025 0910478 324.6426  29.7182 12.37009229207562"
 }
-
-
 
 
 function generateOrbitCoordinates(satellitedata, numPoints = 100) {
@@ -365,7 +302,7 @@ function Satellite_render_test({satellite: satelliteData, colour}) {
         </Html>
         )}
         <mesh>
-          <sphereGeometry args={[0.05, 10, 10]}/> {/* 5x larger */}
+          <sphereGeometry args={[0.05, 10, 10]}/> {/* 5x larger hitbox*/}
           <meshBasicMaterial transparent opacity={0.1} wireframe = {false} />
         </mesh>
       </mesh>
@@ -374,8 +311,73 @@ function Satellite_render_test({satellite: satelliteData, colour}) {
   );
 }
 
+function Batch_render_satellites({ satellite_data_array }) { 
+  console.log(satellite_data_array);
+  const dataToRender = Array.isArray(satellite_data_array) ? satellite_data_array : [];
+  
+  if (dataToRender.length === 0) {
+    return null;
+  }
+  console.log('Rendering batch of satellites:', dataToRender);
+  return (
+    <>
+      {dataToRender.map((data, index) => {
+        console.log(`Rendering satellite ${index}:`, data)
+        return (
+          <Satellite_render_test 
+            key={index} 
+            satellite={data} 
+            colour={'orange'} 
+          />
+        )
+      })}
+    </>
+  )
+}
+
+const fetchSatellite = async (norad_id) => {
+  const response = await fetch(
+    `http://localhost:8000//api/satellite/${norad_id}`
+  );
+  
+  if (!response.ok) {
+    throw new Error(`Failed to fetch satellite: ${response.status}`);
+  }
+  
+  const data = await response.json();
+  return data; // Return the parsed JSON data
+};
+
+
 
 function App() {
+  const [items, setItems] = useState([])
+  const [input, setInput] = useState('')
+  const [satellites, setSatellites] = useState([])
+
+  
+
+
+  const handleAdd = async () => { 
+    if (input) {
+      setItems([...items, input])
+      setInput('')
+      const satelliteData = await fetchSatellite(input)  
+      console.log(satelliteData)
+      if (satelliteData) {
+        setSatellites([...satellites, satelliteData])
+      }
+    }
+  }
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleAdd();
+    }
+  }
+
+  const handleReset = () => {
+    setItems([]);
+  }
   return (
     <div style={{ width: '100vw', height: '100vh', background: '#1b1e2b' }}>
       <Canvas>
@@ -385,12 +387,31 @@ function App() {
         
         <The_Earth data={[1, 16, 16]} />
         <axesHelper args={[5]} />
-        <Satellite_render_test satellite={test_data} colour={'cyan'} />
         <Satellite_render_test satellite={test_data_2} colour={'lime'} />
         <Satellite_render_test satellite={test_data_3} colour={'magenta'} />
+        <Batch_render_satellites satellite_data_array ={satellites} />
+        
 
       </Canvas>
+
+
+      <div style={{ position: 'absolute', top: 20, left: 20 }}>
+        <input 
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyPress}
+          placeholder= "NORAD ID"
+        />
+        <button onClick={handleAdd}>Add</button>
+        <button onClick={handleReset}>Reset</button>
+        <ul>
+          {items.map((item, index) => (
+            <li key={index}>{item}</li>
+          ))}
+        </ul>
+      </div>
     </div>
+    
   );
 }
 
