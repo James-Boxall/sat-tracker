@@ -1,8 +1,9 @@
-import { Canvas } from '@react-three/fiber';
-import {Line, OrbitControls } from '@react-three/drei';
-import { useEffect, useState, useMemo } from 'react';
+import { Canvas, useLoader} from '@react-three/fiber';
+import {Line, OrbitControls, Html,  } from '@react-three/drei';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import * as THREE from 'three';
 import * as satellite from 'satellite.js';
+import "./App.css"
 const scale = 1/6371; // Simulation scale based on Earth's radius in km
 
 const test_data = {
@@ -252,10 +253,54 @@ function Orbit_path_new({satellitedata, color, lineWidth, opacity}) {
   );
 }
 
+function The_Earth(data) {
+  const texture = useLoader(THREE.TextureLoader, '/Whole_world_-_land_and_oceans_12000.jpg');
+  const [hovered, setHovered] = useState(false);
+
+  const getEarthRotation = () =>  {
+    const now = new Date();
+    const gmst = satellite.gstime(now);
+    return gmst;
+  }
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const rotation = getEarthRotation();
+      setEarthRotation(rotation);
+    }, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const [earthRotation, setEarthRotation] = useState(getEarthRotation());
+
+
+
+  return (
+    <mesh
+    onPointerOver={(e) => {
+        e.stopPropagation();  // Prevent triggering parent elements
+        setHovered(true);
+        document.body.style.cursor = 'pointer'; 
+      }}
+      onPointerOut={() => {
+        setHovered(false);
+        document.body.style.cursor = 'default';
+      }}
+    rotation = {[3.14159/2,earthRotation,0]}
+    >
+        <sphereGeometry args={[1,16,16]}/>
+        <meshStandardMaterial map = {texture}/>
+    </mesh>)};
+
+
 
 
 function Satellite_render_test({satellite: satelliteData, colour}) {
   const [position, setPosition] = useState(() => getCurrentPosition(satelliteData));
+  const [hovered, setHovered] = useState(false);
+  const [active, setActive] = useState(false)
+  const hoverTimeoutRef = useRef(null);
   
 
   const satrec = useMemo(() => 
@@ -276,12 +321,53 @@ function Satellite_render_test({satellite: satelliteData, colour}) {
     
     return () => clearInterval(interval);
   }, [satrec]);
+
+  useEffect(() => {
+  return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
   
   return (
-    <group>
+    <group
+      onClick={() => setActive(!active)}
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        if (hoverTimeoutRef.current) {
+          clearTimeout(hoverTimeoutRef.current);
+        }
+        setHovered(true);
+        document.body.style.cursor = 'pointer'; 
+      }}
+      onPointerOut={() => {
+        hoverTimeoutRef.current = setTimeout(() => {
+          setHovered(false);
+          document.body.style.cursor = 'default';
+        }, 400);
+      }}
+      
+      >
       <mesh position={position}>
-        <sphereGeometry args={[0.01, 16, 16]}/>
+        <sphereGeometry args={[0.01, 10, 10]}/>
         <meshStandardMaterial color={colour} />
+        
+        {(hovered || active) && (
+        <Html 
+        center
+        pointerEvents='none'
+        >
+        <div className="content">
+          name: {satelliteData.name} <br />
+          norad_id: {satelliteData.norad_id} <br />
+        </div>
+        </Html>
+        )}
+        <mesh>
+          <sphereGeometry args={[0.05, 10, 10]}/> {/* 5x larger */}
+          <meshBasicMaterial transparent opacity={0.1} wireframe = {false} />
+        </mesh>
       </mesh>
       <Orbit_path_new satellitedata={satelliteData} color={colour} opacity={1}/>
     </group>
@@ -297,10 +383,7 @@ function App() {
         <directionalLight position={[10, 10, 5]} intensity={1} />
         <OrbitControls />
         
-        <mesh>
-          <sphereGeometry args={[1, 16, 16]}/>
-          <meshStandardMaterial color="orange" />
-        </mesh>
+        <The_Earth data={[1, 16, 16]} />
         <axesHelper args={[5]} />
         <Satellite_render_test satellite={test_data} colour={'cyan'} />
         <Satellite_render_test satellite={test_data_2} colour={'lime'} />
