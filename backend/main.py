@@ -150,7 +150,7 @@ def get_satellite_by_id(norad_id):
 
                             satellite = Satrec.twoline2rv(TLE_line1, TLE_line2)
                             now = datetime.now()
-                            jd, fr = jday(now.year, now.month, now.day, now.hour, now.minute, now.second + now.microsecond * 1e-6)
+                            jd, fr = jday(now.year, now.month, now.day, now.hour, now.minute, now.second)
                             error, r, v = satellite.sgp4(jd, fr)
 
                             
