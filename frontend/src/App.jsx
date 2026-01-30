@@ -133,6 +133,7 @@ function Satellite_render_test({satellite: satelliteData, colour, position}) {
   // Remove the interval and position state from here
   const [hovered, setHovered] = useState(false);
   const [active, setActive] = useState(false);
+  const [infoVisible, setInfoVisible] = useState(false);
  
   const hoverTimeoutRef = useRef(null);
 
@@ -188,9 +189,21 @@ function Satellite_render_test({satellite: satelliteData, colour, position}) {
         
         {(hovered || active) && (
           <Html center pointerEvents='none'>
-            <div className="satellite-info">
-              Name: {satelliteData.name} <br />
-              norad_id: {satelliteData.norad_id} <br />
+            <div className="satellite-info-box">
+              <ul className= 'satellite-info-list'>
+                <li className= 'info-list-item'>Name: {satelliteData.name}</li>
+                <li className= 'info-list-item'>NORAD id: {satelliteData.norad_id}</li>
+                {infoVisible && (<>
+                  <li className= 'info-list-item'>Launch Year: {satelliteData.launch_year}</li>
+                  <li className= 'info-list-item'>Group: {satelliteData.group}</li>
+                  <li className= 'info-list-item'>Orbital Period (minutes): {satelliteData.calculated.orbital_period_minutes}</li>
+                  <li className= 'info-list-item'>Perigee (km): {satelliteData.calculated.perigee_km}</li>
+                  <li className= 'info-list-item'>Apogee (km): {satelliteData.calculated.apogee_km}</li>
+                  <li className= 'info-list-item'>Inclination (degrees): {satelliteData.calculated.inclination_degrees}</li>
+                </>)}
+                
+              </ul>
+              <button className = 'button' onClick= {() => setInfoVisible(!infoVisible)} > {infoVisible? 'hide info' : 'show info'} </button>
             </div>
           </Html>
         )}

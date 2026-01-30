@@ -25,7 +25,10 @@ canvas {
   position: absolute;
 }
 
-.satellite-info {
+ /* Styling for satellite text boxes */
+.satellite-info-box {
+  display : flex;
+  flex-direction: column;
   padding-top: 10px;
   transform: translate3d(calc(50% + 40px), 0, 0);
   text-align: left;
@@ -33,8 +36,29 @@ canvas {
   color: #202035;
   padding: 10px 15px;
   border-radius: 5px;
+  width: fit-content; 
+  min-width: max-content;
+}
+.satellite-info-list {
+  display : flex;
+  flex-direction: column;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.info_list_item {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  white-space: nowrap
+
 }
 
+
+
+
+ /* CSS for add satellite box for top row */
 .add-content-container {
   padding-top: 10px;
   text-align: left;
@@ -51,7 +75,7 @@ canvas {
 }
 
 .top-row {
-  display: flex; /* flexbox for top row */
+  display: flex;
   gap: 10px;
   align-items: center;
   margin-bottom: 10px;
