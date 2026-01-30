@@ -4,124 +4,9 @@ import { useRef, useEffect, useState, useMemo } from 'react';
 import * as THREE from 'three';
 import * as satellite from 'satellite.js';
 import "./App.css"
+
+
 const scale = 1/6371; // Simulation scale based on Earth's radius in km
-
-const test_data = {
-  "arg_of_pericenter": 36.3768,
-  "bstar": 0.00021554,
-  "calculated": {
-    "apogee_km": 436.63,
-    "orbital_period_minutes": 93.01,
-    "perigee_km": 421.46,
-    "position_km": [
-      -2318.0924252856476,
-      5668.544233388949,
-      -2980.31397352432
-    ],
-    "semi_major_axis_km": 6800.05
-  },
-  "classification": "U",
-  "eccentricity": 0.0011156,
-  "element_set_no": 999,
-  "ephemeris_type": 0,
-  "epoch": "2026-01-27T15:49:54.883200",
-  "epoch_day": 27.659663,
-  "epoch_year": 26,
-  "group": "stations",
-  "inclination": 51.6319,
-  "launch_number": "067",
-  "launch_piece": "A",
-  "launch_year": "98",
-  "line_number": 2,
-  "mean_anomaly": 323.7976,
-  "mean_motion": 15.48229162,
-  "mean_motion_ddot": 0.0,
-  "mean_motion_dot": 0.00011148,
-  "name": "ISS (ZARYA)",
-  "norad_id": 25544,
-  "ra_of_asc_node": 275.1786,
-  "rev_at_epoch": 54997,
-  "tle_line1": "1 25544U 98067A   26027.65966300  .00011148  00000+0  21554-3 0  9996",
-  "tle_line2": "2 25544  51.6319 275.1786 0011156  36.3768 323.7976 15.48229162549971"
-}
-
-const test_data_2 = {
-  "arg_of_pericenter": 12.9721,
-  "bstar": 0.00033868,
-  "calculated": {
-    "apogee_km": 397.94,
-    "orbital_period_minutes": 92.24,
-    "perigee_km": 384.94,
-    "position_km": [
-      2515.017674806856,
-      5654.147486614308,
-      -2722.6039252375613
-    ],
-    "semi_major_axis_km": 6762.44
-  },
-  "classification": "U",
-  "eccentricity": 0.000961,
-  "element_set_no": 999,
-  "ephemeris_type": 0,
-  "epoch": "2026-01-27T05:29:13.184448",
-  "epoch_day": 27.22862482,
-  "epoch_year": 26,
-  "group": "stations",
-  "inclination": 41.4668,
-  "launch_number": "035",
-  "launch_piece": "A",
-  "launch_year": "21",
-  "line_number": 2,
-  "mean_anomaly": 347.1363,
-  "mean_motion": 15.61162625,
-  "mean_motion_ddot": 0.0,
-  "mean_motion_dot": 0.00029284,
-  "name": "CSS (TIANHE)",
-  "norad_id": 48274,
-  "ra_of_asc_node": 100.1488,
-  "rev_at_epoch": 27113,
-  "tle_line1": "1 48274U 21035A   26027.22862482  .00029284  00000+0  33868-3 0  9992",
-  "tle_line2": "2 48274  41.4668 100.1488 0009610  12.9721 347.1363 15.61162625271132"
-}
-
-const test_data_3 = {
-  "arg_of_pericenter": 324.6426,
-  "bstar": 0.09783900000000001,
-  "calculated": {
-    "apogee_km": 2245.49,
-    "orbital_period_minutes": 116.41,
-    "perigee_km": 807.4,
-    "position_km": [
-      4782.049094433369,
-      4659.215427458018,
-      -2653.719984441272
-    ],
-    "semi_major_axis_km": 7897.45
-  },
-  "classification": "U",
-  "eccentricity": 0.0910478,
-  "element_set_no": 999,
-  "ephemeris_type": 0,
-  "epoch": "2026-01-27T06:54:31.529088",
-  "epoch_day": 27.28786492,
-  "epoch_year": 26,
-  "group": "stations",
-  "inclination": 51.649,
-  "launch_number": "037",
-  "launch_piece": "PF",
-  "launch_year": "11",
-  "line_number": 2,
-  "mean_anomaly": 29.7182,
-  "mean_motion": 12.37009229,
-  "mean_motion_ddot": 0.0,
-  "mean_motion_dot": 0.0005386,
-  "name": "FREGAT DEB",
-  "norad_id": 49271,
-  "ra_of_asc_node": 64.5025,
-  "rev_at_epoch": 20756,
-  "tle_line1": "1 49271U 11037PF  26027.28786492  .00053860  00000+0  97839-1 0  9996",
-  "tle_line2": "2 49271  51.6490  64.5025 0910478 324.6426  29.7182 12.37009229207562"
-}
 
 
 function generateOrbitCoordinates(satellitedata, numPoints = 100) {
@@ -230,43 +115,55 @@ function The_Earth(data) {
         <meshStandardMaterial map = {texture}/>
     </mesh>)};
 
-
-
-
-function Satellite_render_test({satellite: satelliteData, colour}) {
-  const [position, setPosition] = useState(() => getCurrentPosition(satelliteData));
-  const [hovered, setHovered] = useState(false);
-  const [active, setActive] = useState(false)
-  const hoverTimeoutRef = useRef(null);
-  
-
-  const satrec = useMemo(() => 
-    satellite.twoline2satrec(satelliteData.tle_line1, satelliteData.tle_line2),
-    [satelliteData.tle_line1, satelliteData.tle_line2]
+const fetchSatellite = async (norad_id) => {
+  const response = await fetch(
+    `http://localhost:8000//api/satellite/${norad_id}`
   );
   
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const now = new Date();
-      const posVel = satellite.propagate(satrec, now); // Using the library
-      
-      if (!posVel.error && posVel.position) {
-        const pos = posVel.position;
-        setPosition([pos.x*scale, pos.y*scale, pos.z*scale]);
-      }
-    }, 1000);
-    
-    return () => clearInterval(interval);
-  }, [satrec]);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch satellite: ${response.status}`);
+  }
+  
+  const data = await response.json();
+  return data; // Return the parsed JSON data
+};
 
+
+function Satellite_render_test({satellite: satelliteData, colour, position}) {
+  // Remove the interval and position state from here
+  const [hovered, setHovered] = useState(false);
+  const [active, setActive] = useState(false);
+ 
+  const hoverTimeoutRef = useRef(null);
+
+  
+  // Function to generate a color from a string
+  const stringToColour = (str) => {
+    let hash = 0;
+    str.split('').forEach(char => {
+      hash = char.charCodeAt(0) + ((hash << 5) - hash)
+    })
+    let colour = '#'
+    for (let i = 0; i < 3; i++) {
+      const value = (hash >> (i * 8)) & 0xff
+      colour += value.toString(16).padStart(2, '0')
+    }
+    return colour
+  }
+  
+  // Determine colour between given and random
+  const UsedColour = colour || stringToColour(satelliteData.norad_id.toString());
+  
   useEffect(() => {
-  return () => {
+    return () => {
       if (hoverTimeoutRef.current) {
         clearTimeout(hoverTimeoutRef.current);
       }
     };
   }, []);
-  
+
+
+
   return (
     <group
       onClick={() => setActive(!active)}
@@ -284,91 +181,120 @@ function Satellite_render_test({satellite: satelliteData, colour}) {
           document.body.style.cursor = 'default';
         }, 400);
       }}
-      
-      >
-      <mesh position={position}>
+    >
+      <mesh position={position}>  {/* Use passed position */}
         <sphereGeometry args={[0.01, 10, 10]}/>
-        <meshStandardMaterial color={colour} />
+        <meshStandardMaterial color={UsedColour} />
         
         {(hovered || active) && (
-        <Html 
-        center
-        pointerEvents='none'
-        >
-        <div className="content">
-          name: {satelliteData.name} <br />
-          norad_id: {satelliteData.norad_id} <br />
-        </div>
-        </Html>
+          <Html center pointerEvents='none'>
+            <div className="satellite-info">
+              Name: {satelliteData.name} <br />
+              norad_id: {satelliteData.norad_id} <br />
+            </div>
+          </Html>
         )}
         <mesh>
-          <sphereGeometry args={[0.05, 10, 10]}/> {/* 5x larger hitbox*/}
-          <meshBasicMaterial transparent opacity={0.1} wireframe = {false} />
+          <sphereGeometry args={[0.05, 10, 10]}/>
+          <meshBasicMaterial transparent opacity={0.1} wireframe={false} />
         </mesh>
       </mesh>
-      <Orbit_path_new satellitedata={satelliteData} color={colour} opacity={1}/>
+      <Orbit_path_new satellitedata={satelliteData} color={UsedColour} opacity={1}/>
     </group>
   );
 }
 
-function Batch_render_satellites({ satellite_data_array }) { 
-  console.log(satellite_data_array);
-  const dataToRender = Array.isArray(satellite_data_array) ? satellite_data_array : [];
-  
-  if (dataToRender.length === 0) {
+function Batch_render_satellites({ satellites, positions }) { 
+  if (satellites.length === 0) {
     return null;
   }
-  console.log('Rendering batch of satellites:', dataToRender);
+  
   return (
     <>
-      {dataToRender.map((data, index) => {
-        console.log(`Rendering satellite ${index}:`, data)
-        return (
-          <Satellite_render_test 
-            key={index} 
-            satellite={data} 
-            colour={'orange'} 
-          />
-        )
-      })}
+      {satellites.map((data, index) => (
+        <Satellite_render_test 
+          key={data.norad_id} 
+          satellite={data} 
+          colour={null} 
+          position={positions[index] || [0, 0, 0]}
+        />
+      ))}
     </>
   )
 }
-
-const fetchSatellite = async (norad_id) => {
-  const response = await fetch(
-    `http://localhost:8000//api/satellite/${norad_id}`
-  );
-  
-  if (!response.ok) {
-    throw new Error(`Failed to fetch satellite: ${response.status}`);
-  }
-  
-  const data = await response.json();
-  return data; // Return the parsed JSON data
-};
-
-
 
 function App() {
   const [items, setItems] = useState([])
   const [input, setInput] = useState('')
   const [satellites, setSatellites] = useState([])
+  const [positions, setPositions] = useState([])
 
+  const addOnStartup = [25544, 48274, 49271]; // NORAD IDs to add on startup
+
+   useEffect(() => {
+    const loadInitialSatellites = async () => { // ISS and others
+      
+      const satelliteData = await Promise.all(
+        addOnStartup.map(id => fetchSatellite(id))
+      );
+      
+      setSatellites(satelliteData);
+      setItems(addOnStartup);
+      
+      const initialPositions = satelliteData.map(sat => getCurrentPosition(sat));
+      setPositions(initialPositions);
+    };
+    
+    loadInitialSatellites();
+  }, []);
   
 
 
+  // Memoize satrec objects
+  const satrecs = useMemo(() => {
+    return satellites.map(sat => 
+      satellite.twoline2satrec(sat.tle_line1, sat.tle_line2)
+    );
+  }, [satellites]);
+
+  // Single interval for all satellites
+  useEffect(() => {
+    if (satellites.length === 0) return;
+
+    const interval = setInterval(() => {
+      console.log('Updating positions for all satellites');
+      const now = new Date();
+      const newPositions = satrecs.map(satrec => {
+        const posVel = satellite.propagate(satrec, now);
+        
+        if (!posVel.error && posVel.position) {
+          const pos = posVel.position;
+          return [pos.x * scale, pos.y * scale, pos.z * scale];
+        }
+        return [0, 0, 0];
+      });
+      
+      setPositions(newPositions);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [satrecs]);
+
   const handleAdd = async () => { 
     if (input) {
-      setItems([...items, input])
+      setItems(prev => [...prev, input])
       setInput('')
       const satelliteData = await fetchSatellite(input)  
-      console.log(satelliteData)
+      
       if (satelliteData) {
-        setSatellites([...satellites, satelliteData])
+        setSatellites(prev => [...prev, satelliteData])
+        // Calculate initial position
+        const initialPos = getCurrentPosition(satelliteData)
+        setPositions(prev => [...prev, initialPos])
       }
     }
   }
+
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       handleAdd();
@@ -377,7 +303,21 @@ function App() {
 
   const handleReset = () => {
     setItems([]);
+    setSatellites([]);
+    setPositions([]);
   }
+
+  function RemoveButton ({index}) {
+    function handleRemove() {
+      setItems(prev => prev.filter((_, i) => i !== index));
+      setSatellites(prev => prev.filter((_, i) => i !== index));
+      setPositions(prev => prev.filter((_, i) => i !== index));
+    }
+    return (
+      <button className = 'remove-button' onClick={handleRemove}>Remove</button>
+    );
+  }
+
   return (
     <div style={{ width: '100vw', height: '100vh', background: '#1b1e2b' }}>
       <Canvas>
@@ -387,31 +327,34 @@ function App() {
         
         <The_Earth data={[1, 16, 16]} />
         <axesHelper args={[5]} />
-        <Satellite_render_test satellite={test_data_2} colour={'lime'} />
-        <Satellite_render_test satellite={test_data_3} colour={'magenta'} />
-        <Batch_render_satellites satellite_data_array ={satellites} />
-        
-
+        <Batch_render_satellites satellites={satellites} positions={positions} />
       </Canvas>
 
-
-      <div style={{ position: 'absolute', top: 20, left: 20 }}>
-        <input 
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyPress}
-          placeholder= "NORAD ID"
-        />
-        <button onClick={handleAdd}>Add</button>
-        <button onClick={handleReset}>Reset</button>
-        <ul>
-          {items.map((item, index) => (
-            <li key={index}>{item}</li>
+      <div className='add-content-container' style={{ position: 'absolute', top: 20, left: 20 }}>
+        <ul className='satellite-list'> 
+          <li className="top-row">
+            <input 
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyPress}
+              placeholder="NORAD ID"
+              className='input'
+            />
+            <button className='button' onClick={handleAdd}>Add</button>
+            <button className='button' onClick={handleReset}>Reset</button>
+          </li>
+          
+          {satellites.map((satellite_data, index) => (
+            <li className='list-item' key={satellite_data.norad_id}>
+              <span className='list-content'>
+                {satellite_data.name} (NORAD ID: {satellite_data.norad_id})
+              </span>
+              <RemoveButton className='remove-button' index={index} />
+            </li>
           ))}
         </ul>
       </div>
     </div>
-    
   );
 }
 

@@ -25,12 +25,83 @@ canvas {
   position: absolute;
 }
 
-.content {
+.satellite-info {
   padding-top: 10px;
   transform: translate3d(calc(50% + 40px), 0, 0);
   text-align: left;
-  background: #202035;
-  color: white;
+  background: #f2f2f2;
+  color: #202035;
   padding: 10px 15px;
   border-radius: 5px;
+}
+
+.add-content-container {
+  padding-top: 10px;
+  text-align: left;
+  background: #f2f2f2;
+  color: #202035;
+  padding: 10px 15px;
+  border-radius: 5px;
+}
+
+.satellite-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.top-row {
+  display: flex; /* flexbox for top row */
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.input {
+  flex: 1; /* takes remaining space */
+  background: #f2f2f2;
+  color: #4a4a6a;
+  padding: 8px;
+  border: 2px solid #4a4a6a;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.list-item {
+  display: flex; /* flexbox for list items */
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.list-content {
+  flex: 1; /* takes remaining space to match input */
+  background: #f2f2f2;
+  color: #202035;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.button {
+  background: #f2f2f2;
+  border: 2px solid #4a4a6a;
+  color: #4a4a6a;
+  padding: 10px 15px;
+  text-align: center;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  white-space: nowrap; /* prevent button text wrapping */
+}
+
+.remove-button {
+  background: #f2f2f2;
+  border: 2px solid #4a4a6a;
+  color: #4a4a6a;
+  padding: 10px 15px;
+  text-align: center;
+  font-size: 14px;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 80px; /* fixed width to align with buttons above */
 }
