@@ -20,6 +20,48 @@ fetcher = TLEFetcher()
 frontend_dir = Path("../frontend")
 
 
+def satellite_data_calculations(sat):
+    """Calculate additional orbital parameters for a satellite"""
+    mean_motion = sat.get("mean_motion", 0)
+    if mean_motion > 0:
+        # Orbital period in minutes
+        period = 1440 / mean_motion  # 1440 = minutes per day
+        
+        # Semi-major axis (approximate, using simplified formula)
+        # a³ = (μ * T²) / (4π²) where μ = 398600.4418 km³/s² for Earth
+        mu = 398600.4418  # km³/s²
+        T = period * 60  # convert to seconds
+        a = (mu * T * T / (4 * 3.14159 * 3.14159)) ** (1/3)
+        
+        # Perigee and apogee (approximate)
+        e = sat.get("eccentricity", 0)
+        earth_radius = 6371  # km
+        perigee = a * (1 - e) - earth_radius
+        apogee = a * (1 + e) - earth_radius
+
+        # Using sgp4 for exact x,y,z positions
+        TLE_line1 = sat.get("tle_line1")
+        TLE_line2 = sat.get("tle_line2")
+
+
+
+        satellite = Satrec.twoline2rv(TLE_line1, TLE_line2)
+        now = datetime.now()
+        jd, fr = jday(now.year, now.month, now.day, now.hour, now.minute, now.second)
+        error, r, v = satellite.sgp4(jd, fr)
+
+        
+        
+        sat["calculated"] = {
+            "orbital_period_minutes": round(period, 2),
+            "semi_major_axis_km": round(a, 2),
+            "perigee_km": round(perigee, 2),
+            "apogee_km": round(apogee, 2),
+            "position_km": r,
+        }
+    return sat
+
+
 @app.route('/')
 def root():
     """Serve the frontend"""
@@ -68,7 +110,7 @@ def get_satellites(group):
         return jsonify({
             "group": group,
             "count": len(satellites),
-            "satellites": satellites
+            "satellites": [satellite_data_calculations(sat) for sat in satellites]
         })
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
@@ -128,47 +170,34 @@ def get_satellite_by_id(norad_id):
                         # Calculate additional orbital parameters
                         mean_motion = sat.get("mean_motion", 0)
                         if mean_motion > 0:
-                            # Orbital period in minutes
-                            period = 1440 / mean_motion  # 1440 = minutes per day
-                            
-                            # Semi-major axis (approximate, using simplified formula)
-                            # a³ = (μ * T²) / (4π²) where μ = 398600.4418 km³/s² for Earth
-                            mu = 398600.4418  # km³/s²
-                            T = period * 60  # convert to seconds
-                            a = (mu * T * T / (4 * 3.14159 * 3.14159)) ** (1/3)
-                            
-                            # Perigee and apogee (approximate)
-                            e = sat.get("eccentricity", 0)
-                            earth_radius = 6371  # km
-                            perigee = a * (1 - e) - earth_radius
-                            apogee = a * (1 + e) - earth_radius
 
-                            # Using sgp4 for exact x,y,z positions
-                            TLE_line1 = sat.get("tle_line1")
-                            TLE_line2 = sat.get("tle_line2")
-
-
-
-                            satellite = Satrec.twoline2rv(TLE_line1, TLE_line2)
-                            now = datetime.now()
-                            jd, fr = jday(now.year, now.month, now.day, now.hour, now.minute, now.second)
-                            error, r, v = satellite.sgp4(jd, fr)
-
-                            
-                            
-                            sat["calculated"] = {
-                                "orbital_period_minutes": round(period, 2),
-                                "semi_major_axis_km": round(a, 2),
-                                "perigee_km": round(perigee, 2),
-                                "apogee_km": round(apogee, 2),
-                                "position_km": r,
-                            }
-
-                            
-                        
-                        return jsonify(sat)
+                            return jsonify(satellite_data_calculations(sat))
     
     return jsonify({"error": f"Satellite with NORAD ID {norad_id} not found"}), 404
+
+
+@app.route('/api/random_satellites/<int:random_n>', methods=['GET'])
+def get_random_satellite(random_n):
+    """Get a random satellite from the cache"""
+    all_satellites = []
+    
+    # Aggregate all satellites from cached groups
+    for group in fetcher.GROUPS.keys():
+        cache_path = fetcher._get_cache_path(group)
+        if cache_path.exists():
+            with open(cache_path, 'r') as f:
+                satellites = json.load(f)
+                all_satellites.extend(satellites)
+    
+    if not all_satellites:
+        return jsonify({"error": "No satellites found in cache"}), 404
+    
+    # Use random_n to select a n random satellites
+    index = np.random.randint(0, len(all_satellites), size=random_n)
+    random_satellites = [satellite_data_calculations(all_satellites[i]) for i in index]
+
+    
+    return jsonify(random_satellites)
 
 
 @app.route('/api/refresh', methods=['POST'])
@@ -198,7 +227,6 @@ def get_stats():
         "cache_duration_hours": fetcher.cache_duration.total_seconds() / 3600
     })
 
-
 @app.errorhandler(404)
 def not_found(error):
     return jsonify({"error": "Not found"}), 404
@@ -212,9 +240,8 @@ def internal_error(error):
 if __name__ == "__main__":
     # Pre-fetch some common groups on startup
     print("Fetching initial TLE data...")
-    fetcher.fetch_group("starlink")
-    fetcher.fetch_group("stations")
-    fetcher.fetch_group("gps-ops")
+    fetcher.fetch_all_groups(force_refresh=False)
+
     
     print("\nStarting Flask server...")
     print("Server running on http://localhost:8000")

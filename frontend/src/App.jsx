@@ -199,7 +199,7 @@ function Satellite_render_test({satellite: satelliteData, colour, position}) {
                   <li className= 'info-list-item'>Orbital Period (minutes): {satelliteData.calculated.orbital_period_minutes}</li>
                   <li className= 'info-list-item'>Perigee (km): {satelliteData.calculated.perigee_km}</li>
                   <li className= 'info-list-item'>Apogee (km): {satelliteData.calculated.apogee_km}</li>
-                  <li className= 'info-list-item'>Inclination (degrees): {satelliteData.calculated.inclination_degrees}</li>
+                  <li className= 'info-list-item'>Inclination (degrees): {satelliteData.inclination}</li>
                 </>)}
                 
               </ul>
@@ -236,14 +236,60 @@ function Batch_render_satellites({ satellites, positions }) {
   )
 }
 
+function Group_list_item({ group, index,LoadedGroups, groupUpdate, groupLoader, groupRemover }) {
+
+  const handleLoad = () => {
+    
+
+    if (!LoadedGroups.includes(group)) {
+      groupUpdate((prev) => [...prev, group]);
+      groupLoader(group);
+    } else {
+      groupRemover(group);
+    }
+  };
+
+  return (
+    <li className="list-item" key={index}>
+      <span className="list-content">{group}</span>
+      <button className="button" onClick={handleLoad}>
+        {LoadedGroups.includes(group) ? "Remove" : "Load"}
+      </button>
+    </li>
+  );
+}
+
 function App() {
   const [items, setItems] = useState([])
   const [input, setInput] = useState('')
+  const [stats, setStats] = useState({})
+  const [randomInput, setRandomInput] = useState('')
   const [satellites, setSatellites] = useState([])
   const [positions, setPositions] = useState([])
+  const [LoadedGroups, setLoadedGroups] = useState([])
+  const [showGroup, setshowGroup] = useState(false)
 
   const addOnStartup = [25544, 48274, 49271]; // NORAD IDs to add on startup
 
+  // Placeholder groups - replace with actual API call when available
+  
+
+  const fetchStats  = async () => {
+    const stats = await fetch('http://localhost:8000/api/stats');
+    const data = await stats.json();
+    return (data);
+  }
+
+  const TestFunction = async () => {
+    const stats = await fetch(`http://localhost:8000/api/satellites/weather`);
+    const data = await stats.json();
+    console.log(data);
+  }
+
+  
+
+
+  // Load initial satellites and data on startup
    useEffect(() => {
     const loadInitialSatellites = async () => { // ISS and others
       
@@ -257,7 +303,11 @@ function App() {
       const initialPositions = satelliteData.map(sat => getCurrentPosition(sat));
       setPositions(initialPositions);
     };
-    
+     const loadStats = async () => {
+    const data = await fetchStats();  // await the Promise
+    setStats(data);
+    };
+    loadStats();
     loadInitialSatellites();
   }, []);
   
@@ -295,15 +345,29 @@ function App() {
 
   const handleAdd = async () => { 
     if (input) {
-      setItems(prev => [...prev, input])
-      setInput('')
-      const satelliteData = await fetchSatellite(input)  
+      const noradId = input.trim();
       
-      if (satelliteData) {
-        setSatellites(prev => [...prev, satelliteData])
-        // Calculate initial position
-        const initialPos = getCurrentPosition(satelliteData)
-        setPositions(prev => [...prev, initialPos])
+      // Check if satellite already exists
+      if (items.includes(noradId)) {
+        console.warn('Satellite already loaded');
+        return;
+      }
+      
+      try {
+        const satelliteData = await fetchSatellite(noradId);
+        
+        if (satelliteData) {
+          setSatellites(prev => [...prev, satelliteData]);
+          setItems(prev => [...prev, noradId]);
+          
+          // Calculate initial position
+          const initialPos = getCurrentPosition(satelliteData);
+          setPositions(prev => [...prev, initialPos]);
+          
+          setInput(''); // Clear input after successful add
+        }
+      } catch (error) {
+        console.error('Failed to load satellite:', error);
       }
     }
   }
@@ -320,15 +384,93 @@ function App() {
     setPositions([]);
   }
 
-  function RemoveButton ({index}) {
-    function handleRemove() {
-      setItems(prev => prev.filter((_, i) => i !== index));
-      setSatellites(prev => prev.filter((_, i) => i !== index));
-      setPositions(prev => prev.filter((_, i) => i !== index));
+  const handleRemove = (index) => {
+    setItems(prev => prev.filter((_, i) => i !== index));
+    setSatellites(prev => prev.filter((_, i) => i !== index));
+    setPositions(prev => prev.filter((_, i) => i !== index));
+  }
+
+  const handleAddRandom = async () => {
+    const n_random = parseInt(randomInput);
+    
+    if (!n_random || isNaN(n_random) || n_random <= 0 || !Number.isInteger(n_random)) {
+      console.error('Please enter a valid positive integer for number of random satellites.');
+      return;
     }
-    return (
-      <button className = 'remove-button' onClick={handleRemove}>Remove</button>
-    );
+    
+    try {
+      // returns list of n random satellites from backend
+      const response = await fetch(`http://localhost:8000/api/random_satellites/${n_random}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch random satellites: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log('Received satellites:', data);
+      
+      // Update state with new satellites
+      const newSatellites = data.filter(sat => !satellites.some(existing => existing.norad_id === sat.norad_id));
+      setSatellites(prev => [...prev, ...newSatellites]);
+      setItems(prev => [...prev, ...newSatellites.map(sat => sat.norad_id)]);
+      
+      // Calculate initial positions for new satellites
+      const newPositions = newSatellites.map(sat => getCurrentPosition(sat));
+      setPositions(prev => [...prev, ...newPositions]);
+      
+      setRandomInput(''); // Clear input after successful add
+    } catch (error) {
+      console.error('Failed to load random satellites:', error);
+    }
+  }
+
+  const handleRandomKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleAddRandom();
+    }
+  }
+  const handleAddGroup = async (group) => {
+    const groupName = group.trim();
+    
+    if (groupName && !LoadedGroups.includes(groupName)) {
+      try {
+        const response = await fetch(`http://localhost:8000/api/satellites/${groupName}`);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch group: ${response.status}`);
+        }
+        const data = await response.json();
+        
+        // Filter out already loaded satellites
+        const satelliteData = data.satellites;
+        const newSatellites = satelliteData.filter(sat => !satellites.some(existing => existing.norad_id === sat.norad_id));
+        // give sample if too many satellites
+        if (newSatellites.length > 100) {
+          newSatellites = newSatellites.sort(() => 0.5 - Math.random()).slice(0, 100);
+        }
+        
+        setSatellites(prev => [...prev, ...newSatellites]);
+        setItems(prev => [...prev, ...newSatellites.map(sat => sat.norad_id)]);
+
+        // Calculate initial positions for new satellites
+        const newPositions = newSatellites.map(sat => getCurrentPosition(sat));
+        setPositions(prev => [...prev, ...newPositions]);
+        
+        setLoadedGroups(prev => [...prev, groupName]);
+      } catch (error) {
+        console.error('Failed to load group:', error);
+      }
+    }
+  }
+
+  const handleRemoveGroup = (group) => {
+    const groupName = group.trim();
+    
+    if (groupName && LoadedGroups.includes(groupName)) {
+      // Remove satellites belonging to this group
+      setSatellites(prev => prev.filter(sat => sat.group !== groupName));
+      setItems(prev => prev.filter((_, i) => satellites[i].group !== groupName));
+      setPositions(prev => prev.filter((_, i) => satellites[i].group !== groupName));
+      
+      setLoadedGroups(prev => prev.filter(g => g !== groupName));
+    }
   }
 
   return (
@@ -339,33 +481,93 @@ function App() {
         <OrbitControls />
         
         <The_Earth data={[1, 16, 16]} />
-        <axesHelper args={[5]} />
         <Batch_render_satellites satellites={satellites} positions={positions} />
       </Canvas>
 
-      <div className='add-content-container' style={{ position: 'absolute', top: 20, left: 20 }}>
-        <ul className='satellite-list'> 
-          <li className="top-row">
+      <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 10 }}>
+        <div className="add-content-container">
+          <div className="top-row">
+            <h1 style = {{fontSize: 30}}>Active Satellites: {satellites.length}</h1>
+            <button className="button" onClick={handleReset}>Reset All</button>
+          </div>
+          
+          <div
+            className="add-content-container"
+            style={{
+              maxHeight: "300px",
+              overflowY: "auto",
+            }}
+          >
+            <ul className='satellite-list'>
+              {satellites.map((satellite_data, index) => (
+                <li className='list-item' key={satellite_data.norad_id}>
+                  <span className='list-content'>
+                    {satellite_data.name} (NORAD ID: {satellite_data.norad_id})
+                  </span>
+                  <button className='button' onClick={() => handleRemove(index)}>Remove</button>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <h1 style = {{fontSize: 30}}>Loading Options:</h1>
+          
+          <div className="top-row">
+            <h2>Load by NORAD id</h2>
             <input 
+              className="input"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyPress}
               placeholder="NORAD ID"
-              className='input'
             />
-            <button className='button' onClick={handleAdd}>Add</button>
-            <button className='button' onClick={handleReset}>Reset</button>
-          </li>
-          
-          {satellites.map((satellite_data, index) => (
-            <li className='list-item' key={satellite_data.norad_id}>
-              <span className='list-content'>
-                {satellite_data.name} (NORAD ID: {satellite_data.norad_id})
-              </span>
-              <RemoveButton className='remove-button' index={index} />
-            </li>
-          ))}
-        </ul>
+            <button className="button" onClick={handleAdd}>Add</button>
+          </div>
+
+          <div className="top-row">
+            <h2>Load by group</h2>
+            <button className="button" onClick={() => setshowGroup(!showGroup)}>
+              {showGroup ? "hide groups" : "show groups"}
+            </button>
+          </div>
+
+          {showGroup && (
+            <div
+              className="add-content-container"
+              style={{
+                maxHeight: "300px",
+                overflowY: "auto",
+              }}
+            >
+              <ul>
+                {Object.keys(stats.groups).map((item, index) => (
+                  <Group_list_item
+                    key={index}
+                    group={item}
+                    index={index}
+                    LoadedGroups={LoadedGroups}
+                    groupUpdate={setLoadedGroups}
+                    groupLoader={handleAddGroup}
+                    groupRemover={handleRemoveGroup}
+                  />
+                ))}
+              </ul>
+            </div>
+          )}
+
+          <div className="top-row">
+            <h2>Load at random</h2>
+            <input 
+              className="input"
+              value={randomInput}
+              onChange={(e) => setRandomInput(e.target.value)}
+              onKeyDown={handleRandomKeyPress}
+              placeholder="Number"
+            />
+            <button className="button" onClick={handleAddRandom}>Add</button>
+          </div>
+        </div>
+         <button className="button" onClick={TestFunction}>Test</button>
       </div>
     </div>
   );
