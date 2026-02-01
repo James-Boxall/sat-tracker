@@ -1,20 +1,14 @@
-import { Canvas, useLoader} from '@react-three/fiber';
-import {Line, OrbitControls, Html, Billboard  } from '@react-three/drei';
+import { Canvas} from '@react-three/fiber';
+import {OrbitControls} from '@react-three/drei';
 import { useRef, useEffect, useState, useMemo } from 'react';
 import { getCurrentPosition } from './features/satellites/utils/orbitCalculations.jsx';
-import { Orbit_path_new } from './features/satellites/components/OrbitPath';
-import { Satellite_render_test } from './features/satellites/components/SatelliteRender';
 import { The_Earth} from './features/earth/earth.jsx';
-import { fetchSatellite, fetchStats } from './features/satellites/utils/apiCalls.jsx';
+import { fetchSatellite, fetchStats, fetchRandom, fetchGroup } from './features/satellites/utils/apiCalls.jsx';
 import { Batch_render_satellites } from './features/satellites/components/BatchRender.jsx';
 import { GroupListItem} from './components/GroupListItem.jsx'
 import { SCALE } from './utils/constants.js'
-import * as THREE from 'three';
 import * as satellite from 'satellite.js';
 import "./App.css"
-
-
-
 
 
 function App() {
@@ -28,13 +22,9 @@ function App() {
   const [showGroup, setshowGroup] = useState(false)
 
   const addOnStartup = [25544, 48274, 49271]; // NORAD IDs to add on startup
+
+  const TestFunction = () => {}
   
-
-  const TestFunction = async () => {
-  }
-
-  
-
 
   // Load initial satellites and data on startup
    useEffect(() => {
@@ -137,6 +127,7 @@ function App() {
     setPositions(prev => prev.filter((_, i) => i !== index));
   }
 
+
   const handleAddRandom = async () => {
     const n_random = parseInt(randomInput);
     
@@ -147,12 +138,8 @@ function App() {
     
     try {
       // returns list of n random satellites from backend
-      const response = await fetch(`http://localhost:8000/api/random_satellites/${n_random}`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch random satellites: ${response.status}`);
-      }
-      const data = await response.json();
-      console.log('Received satellites:', data);
+     
+      const data = await fetchRandom(n_random)
       
       // Update state with new satellites
       const newSatellites = data.filter(sat => !satellites.some(existing => existing.norad_id === sat.norad_id));
@@ -179,11 +166,8 @@ function App() {
     
     if (groupName && !LoadedGroups.includes(groupName)) {
       try {
-        const response = await fetch(`http://localhost:8000/api/satellites/${groupName}`);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch group: ${response.status}`);
-        }
-        const data = await response.json();
+      
+        const data = await fetchGroup(groupName)
         
         // Filter out already loaded satellites
         const satelliteData = data.satellites;
@@ -226,6 +210,7 @@ function App() {
         <ambientLight intensity={1} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
         <OrbitControls />
+        <axesHelper args={[5]}/>
         
         <The_Earth data={[1, 16, 16]} />
         <Batch_render_satellites satellites={satellites} positions={positions} />

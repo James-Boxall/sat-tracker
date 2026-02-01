@@ -1,8 +1,10 @@
 import { useRef, useEffect, useState } from 'react';
 import { Html, Billboard } from '@react-three/drei';
+import { Suspense } from 'react';
 import * as THREE from 'three';
 import {Orbit_path_new} from './OrbitPath';
 import {stringToColour} from '../utils/orbitCalculations';
+import {SatelliteIcon} from './SatelliteIcons';
 
 
 
@@ -24,38 +26,6 @@ export function Satellite_render_test({satellite: satelliteData, colour, positio
       }
     };
   }, []);
-
-const Satellite_Icon = ({ position, group }) => {
-  const [texture, setTexture] = useState(null);
-  
-  useEffect(() => {
-    const loader = new THREE.TextureLoader();
-    const primaryPath = `/icons/satellite_${group}_icon.png`;
-    
-    loader.load(
-      primaryPath,
-      setTexture,
-      undefined,
-      () => {
-        // On error, load fallback
-        loader.load('/icons/satellite_default_icon.png', setTexture);
-      }
-    );
-  }, [group]);
-  
-  if (!texture) {
-    
-    console.log('No texture loaded for group');
-    return null;}
-  
-  return (
-    <Billboard position={position}>
-      <planeGeometry args={[1, 1]} />
-      <meshBasicMaterial map={texture} transparent side={THREE.DoubleSide} />
-    </Billboard>
-  );
-}
-
 
 
   return (
@@ -79,10 +49,9 @@ const Satellite_Icon = ({ position, group }) => {
       <mesh position={position}>  {/* Use passed position */}
         
         {/* temporarily using a sphere as satellite icon */}
-        <mesh>
-            <sphereGeometry args={[0.01, 10, 10]}/>
-            <meshStandardMaterial color={UsedColour} />
-        </mesh>
+        <Suspense fallback={null}>
+          <SatelliteIcon satData = {satelliteData} colour = {UsedColour}/>
+        </Suspense>
         
         {(hovered || active) && (
           <Html center pointerEvents='none'>
@@ -104,8 +73,10 @@ const Satellite_Icon = ({ position, group }) => {
             </div>
           </Html>
         )}
+        {/*
         <sphereGeometry args={[0.1, 10, 10]}/>
-        <meshStandardMaterial color={'white'} transparent opacity={0.1} />
+        <meshStandardMaterial color={'white'} transparent opacity={0} />
+        */}
       </mesh>
       <Orbit_path_new satellitedata={satelliteData} color={UsedColour} opacity={1}/>
     </group>
