@@ -26,7 +26,8 @@ export function generateOrbitCoordinates(satellitedata, numPoints = 100) {
         
         if (!posVel.error && posVel.position) {
             const pos = posVel.position;
-            coordinates.push([pos.x*SCALE, pos.y*SCALE, pos.z*SCALE]);
+            // Y and Z swapped for THREE co-ords
+            coordinates.push([pos.x*SCALE, pos.z*SCALE, pos.y*SCALE]);
         }
     }
     coordinates.push([coordinates[0][0], coordinates[0][1], coordinates[0][2]]); // Close the loop
@@ -48,7 +49,7 @@ export function getCurrentPosition(satelliteData) {
   }
   
   const pos = posVel.position;
-  return [pos.x * SCALE, pos.y * SCALE, pos.z * SCALE];
+  return [pos.x * SCALE, pos.z * SCALE, pos.y * SCALE];
 }
 
 export function stringToColour(str) {

@@ -69,7 +69,8 @@ function App() {
         
         if (!posVel.error && posVel.position) {
           const pos = posVel.position;
-          return [pos.x * SCALE, pos.y * SCALE, pos.z * SCALE];
+          // Y and Z flipped for THREE.js co-ords
+          return [pos.x * SCALE, pos.z * SCALE, pos.y * SCALE];
         }
         return [0, 0, 0];
       });
@@ -210,7 +211,7 @@ function App() {
         <ambientLight intensity={1} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
         <OrbitControls />
-        <axesHelper args={[5]}/>
+        
         
         <The_Earth data={[1, 16, 16]} />
         <Batch_render_satellites satellites={satellites} positions={positions} />
