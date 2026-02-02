@@ -7,12 +7,15 @@ from  backend.tle_fetcher import TLEFetcher
 import threading
 from sgp4.api import Satrec, jday
 from datetime import datetime, timedelta
+import os
 
 app = Flask(__name__)
 
 # Enable CORS for all routes
-CORS(app)
-
+CORS(app, origins=[
+    os.environ.get("FRONTEND_ORIGIN", "http://localhost:3000"),
+    "http://localhost:5173",  # Vite dev server default
+])
 # Initialize TLE fetcher
 fetcher = TLEFetcher()
 
@@ -60,23 +63,6 @@ def satellite_data_calculations(sat):
             "position_km": r,
         }
     return sat
-
-
-@app.route('/')
-def root():
-    """Serve the frontend"""
-    index_path = frontend_dir / "index.html"
-    if index_path.exists():
-        return send_from_directory(str(frontend_dir), "index.html")
-    return jsonify({"message": "Satellite Tracker API", "docs": "Use /api endpoints"})
-
-
-@app.route('/static/<path:filename>')
-def serve_static(filename):
-    """Serve static files"""
-    if frontend_dir.exists():
-        return send_from_directory(str(frontend_dir), filename)
-    return jsonify({"error": "Frontend directory not found"}), 404
 
 
 @app.route('/api/groups', methods=['GET'])
