@@ -63,15 +63,13 @@ export function The_Earth() {
   useFrame(() => {
     if (!meshRef.current || !shaderRef.current) return;
 
-    const now = new Date("February 2, 2026 16:53:00");
+    const now = new Date();
     
-    // 1. Rotate the Earth mesh (continents)
-    // This moves the texture relative to the World Space
+    // Rotate the Earth mesh
     const gmst = satellite.gstime(now);
     meshRef.current.rotation.y = gmst;
 
-    // 2. Calculate Sun Position in ECI (Inertial Space)
-    // This keeps the sun "still" in World Space while Earth spins
+    // Calculate Sun Position in ECI 
     const jday = satellite.jday(now);
     const since2000 = jday - 2451545;
 
