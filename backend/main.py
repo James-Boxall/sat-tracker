@@ -223,10 +223,12 @@ def internal_error(error):
     return jsonify({"error": "Internal server error"}), 500
 
 
+print("Fetching initial TLE data...")
+fetcher.fetch_all_groups(force_refresh=False)
+print("TLE data loaded.")
+
+
 if __name__ == "__main__":
-    # Pre-fetch some common groups on startup
-    print("Fetching initial TLE data...")
-    fetcher.fetch_all_groups(force_refresh=False)
 
     
     print("\nStarting Flask server...")
