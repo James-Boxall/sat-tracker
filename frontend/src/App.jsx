@@ -211,7 +211,6 @@ function App() {
         <ambientLight intensity={1} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
         <OrbitControls />
-        <axesHelper args = {[5]}/>
         
         
         <The_Earth data={[1, 16, 16]} />
