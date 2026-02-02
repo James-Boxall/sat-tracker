@@ -63,30 +63,31 @@ export function The_Earth() {
   useFrame(() => {
     if (!meshRef.current || !shaderRef.current) return;
 
-    const now = new Date();
+    const now = new Date("February 2, 2026 16:53:00");
+    
+    // 1. Rotate the Earth mesh (continents)
+    // This moves the texture relative to the World Space
     const gmst = satellite.gstime(now);
     meshRef.current.rotation.y = gmst;
 
+    // 2. Calculate Sun Position in ECI (Inertial Space)
+    // This keeps the sun "still" in World Space while Earth spins
     const jday = satellite.jday(now);
     const since2000 = jday - 2451545;
 
-    const meanLongitude = (280.460 + 0.856474 * since2000) % 360;
+    const meanLongitude = (280.460 + 0.9856474 * since2000) % 360;
     const meanAnomaly = (357.528 + 0.9856003 * since2000) % 360;
     const rad = Math.PI / 180;
     const lambda = meanLongitude + 1.915 * Math.sin(meanAnomaly * rad) +
                    0.020 * Math.sin(2 * meanAnomaly * rad);
     const obliquity = 23.439 - 0.0000004 * since2000;
 
+    // ECI Coordinates (Z is North, X is Vernal Equinox)
     const X = Math.cos(lambda * rad);
     const Y = Math.cos(obliquity * rad) * Math.sin(lambda * rad);
     const Z = Math.sin(obliquity * rad) * Math.sin(lambda * rad);
 
-    const X_ecf =  X * Math.cos(gmst) + Y * Math.sin(gmst)
-    const Y_ecf = -X * Math.sin(gmst) + Y * Math.cos(gmst)
-    const Z_ecf = Z
-
-    // Swap Y and Z for Three.js (Y-up), and negate for light direction convention
-    shaderRef.current.uniforms.lightDirection.value.set(X_ecf, Z_ecf, Y_ecf).normalize();
+    shaderRef.current.uniforms.lightDirection.value.set(X, Z, -Y).normalize();
   });
 
   return (
