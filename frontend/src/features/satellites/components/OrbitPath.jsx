@@ -11,7 +11,7 @@ export function Orbit_path_new({satellitedata, color, dateRef, lineWidth, opacit
     const points = useMemo(() => generateOrbitCoordinates({satellitedata, dateRef}), [satellitedata, renderTrigger]);
 
 return (
-    <Line 
+    <Line S
     points={points} 
     color={color || 'white'}
     lineWidth={lineWidth || 2} 

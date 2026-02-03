@@ -82,11 +82,11 @@ function App() {
     );
   }, [satellites]);
 
-  // Single interval for all satellites
+  // ReRender trigger for all satellites - ticks every second OR if the date is manually changed
   useEffect(() => {
     if (satellites.length === 0) return;
 
-    const interval = setInterval(() => {
+    const update = () => {
       console.log('Updating positions for all satellites');
       const now = dateRef.current;
       const newPositions = satrecs.map(satrec => {
@@ -94,17 +94,24 @@ function App() {
         
         if (!posVel.error && posVel.position) {
           const pos = posVel.position;
-          // Y and Z flipped for THREE.js co-ords
           return [pos.x * SCALE, pos.z * SCALE, pos.y * SCALE];
         }
         return [0, 0, 0];
       });
       
       setPositions(newPositions);
+    };
+
+    update();
+
+    const interval = setInterval(() => {
+      update();
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [satrecs]);
+  }, [satrecs, datechange])
+
+
 
   const handleAdd = async () => { 
     if (input) {
@@ -197,8 +204,9 @@ function App() {
         
         // Filter out already loaded satellites
         const satelliteData = data.satellites;
-        const newSatellites = satelliteData.filter(sat => !satellites.some(existing => existing.norad_id === sat.norad_id));
+        let newSatellites = satelliteData.filter(sat => !satellites.some(existing => existing.norad_id === sat.norad_id));
         // give sample if too many satellites
+        console.log(newSatellites.length)
         if (newSatellites.length > 100) {
           newSatellites = newSatellites.sort(() => 0.5 - Math.random()).slice(0, 100);
         }

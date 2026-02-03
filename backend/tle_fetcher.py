@@ -70,21 +70,18 @@ class TLEFetcher:
         return datetime.now() - cache_time < self.cache_duration
     
     def _parse_tle_scientific(self, s: str) -> float:
-        """Parse TLE scientific notation format (e.g., '21756-3' -> 0.21756e-3)"""
-        s = s.strip()
-        if not s or s == '00000+0' or s == '00000-0':
+        """Parse TLE scientific notation format (e.g., '+21756-3' -> 0.21756e-3)"""
+        if s[1:-2] == '00000':
             return 0.0
-        
-        # TLE format: NNNNN±N where NNNNN is mantissa and ±N is exponent
+        # TLE format: ±NNNNN±N where ±NNNNN is mantissa and ±N is exponent
         # Need to insert decimal point and 'e' for standard scientific notation
-        if '+' in s:
-            parts = s.split('+')
-            return float('0.' + parts[0]) * (10 ** int(parts[1]))
-        elif '-' in s:
-            parts = s.split('-')
-            return float('0.' + parts[0]) * (10 ** -int(parts[1]))
+        if s[0] == '-':
+            result = float(s[0]+'1')*float('0.' +s[1:6])*(10**(float(s[6]+'1')*float(s[7])))
         else:
-            return float(s)
+            result = float(s[0]+'1')*float('0.' +s[1:6])*(10**(float(s[6]+'1')*float(s[7])))
+        
+        return result
+       
     
     def _parse_tle_line1(self, line1: str) -> Dict:
         """Parse TLE line 1 to extract orbital elements"""
