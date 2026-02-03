@@ -164,6 +164,7 @@ function App() {
         }
       } catch (error) {
         console.error('Failed to load satellite:', error);
+        setConnected(false)
       }
     }
   }
@@ -247,6 +248,7 @@ function App() {
         setLoadedGroups(prev => [...prev, groupName]);
       } catch (error) {
         console.error('Failed to load group:', error);
+        setConnected(false)
       }
     }
   }
@@ -283,7 +285,7 @@ function App() {
       <div style={{ position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 10}}>
         <ConnectionError connected = {connected}/>
       </div>
-      <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 10, maxHeight: '80vh', overflowY: "auto",  }}>
+      <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 10, maxHeight: '85vh', overflowY: "auto",  }}>
         <div className="add-content-container">
           <div className="top-row">
             <h1 style = {{fontSize: 30}}>Active Satellites: {satellites.length}</h1>
