@@ -1,12 +1,13 @@
-import { Canvas} from '@react-three/fiber';
+import {Canvas, useFrame} from '@react-three/fiber';
 import {OrbitControls} from '@react-three/drei';
-import { useRef, useEffect, useState, useMemo } from 'react';
+import { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { getCurrentPosition } from './features/satellites/utils/orbitCalculations.jsx';
 import { The_Earth} from './features/earth/earth.jsx';
 import { fetchSatellite, fetchStats, fetchRandom, fetchGroup } from './features/satellites/utils/apiCalls.jsx';
 import { Batch_render_satellites } from './features/satellites/components/BatchRender.jsx';
 import { GroupListItem} from './components/GroupListItem.jsx'
-import { SCALE } from './utils/constants.js'
+import { DateTimePicker } from './components/TimeManager.jsx';
+import { SCALE, STARTUP_SATELLITES } from './utils/constants.js'
 import * as satellite from 'satellite.js';
 import "./App.css"
 
@@ -20,10 +21,34 @@ function App() {
   const [positions, setPositions] = useState([])
   const [LoadedGroups, setLoadedGroups] = useState([])
   const [showGroup, setshowGroup] = useState(false)
+  
+  // Handling changing dates
+  const customdate = useRef(false)
+  const [datechange, setDatechange] = useState(0)
+  const bumpVersion = useCallback(() => setDatechange((v) => v + 1), []);
+  const dateRef = useRef(new Date())
 
-  const addOnStartup = [25544, 48274, 49271]; // NORAD IDs to add on startup
+  const TestFunction = () => {
 
-  const TestFunction = () => {}
+    dateRef.current = new Date("February 2, 2026 01:00:00")
+    customdate.current = false
+    setDatechange(prev => prev + 1)
+  }
+
+  function DateController({ dateRef, customdate }) {
+  useFrame((_, Delta) => { 
+      if (!customdate) {
+        dateRef.current = new Date();
+      }
+      else {
+        const updatedTime = dateRef.current.getTime() + Delta * 1000
+        dateRef.current = new Date(updatedTime)
+
+      }
+    });
+    
+    return null; 
+  }
   
 
   // Load initial satellites and data on startup
@@ -31,11 +56,11 @@ function App() {
     const loadInitialSatellites = async () => { // ISS and others
       
       const satelliteData = await Promise.all(
-        addOnStartup.map(id => fetchSatellite(id))
+        STARTUP_SATELLITES.map(id => fetchSatellite(id))
       );
       
       setSatellites(satelliteData);
-      setItems(addOnStartup);
+      setItems(STARTUP_SATELLITES);
       
       const initialPositions = satelliteData.map(sat => getCurrentPosition(sat));
       setPositions(initialPositions);
@@ -63,7 +88,7 @@ function App() {
 
     const interval = setInterval(() => {
       console.log('Updating positions for all satellites');
-      const now = new Date();
+      const now = dateRef.current;
       const newPositions = satrecs.map(satrec => {
         const posVel = satellite.propagate(satrec, now);
         
@@ -208,15 +233,19 @@ function App() {
   return (
     <div style={{ width: '100vw', height: '100vh', background: '#1b1e2b' }}>
       <Canvas>
+        <DateController dateRef={dateRef} customdate={customdate} />
         <ambientLight intensity={1} />
         <directionalLight position={[10, 10, 5]} intensity={1} />
         <OrbitControls />
         
         
-        <The_Earth data={[1, 16, 16]} />
-        <Batch_render_satellites satellites={satellites} positions={positions} />
+        <The_Earth date={dateRef} />
+        <Batch_render_satellites satellites={satellites} positions={positions} dateRef = {dateRef} renderTrigger = {datechange} />
       </Canvas>
-
+      
+      <div style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 10, maxHeight: '80vh', overflowY: "auto", }}>
+        <DateTimePicker dateRef={dateRef} customdate={customdate} bumpVersion={bumpVersion} />
+      </div>
       <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 10 }}>
         <div className="add-content-container">
           <div className="top-row">
@@ -300,7 +329,9 @@ function App() {
             <button className="button" onClick={handleAddRandom}>Add</button>
           </div>
         </div>
+
          <button className="button" onClick={TestFunction}>Test</button>
+        
       </div>
     </div>
   );

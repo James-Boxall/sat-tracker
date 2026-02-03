@@ -5,8 +5,10 @@ import { generateOrbitCoordinates } from '../utils/orbitCalculations.jsx';
 
 
 
-export function Orbit_path_new({satellitedata, color, lineWidth, opacity}) {
-const points = useMemo(() => generateOrbitCoordinates(satellitedata), [satellitedata]);
+export function Orbit_path_new({satellitedata, color, dateRef, lineWidth, opacity, renderTrigger}) {
+
+
+    const points = useMemo(() => generateOrbitCoordinates({satellitedata, dateRef}), [satellitedata, renderTrigger]);
 
 return (
     <Line 

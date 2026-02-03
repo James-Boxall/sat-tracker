@@ -3,20 +3,25 @@ import { useLoader } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useEffect, useState } from 'react';
 
-function useFirstValidTexture(paths) {
+
+ function useFirstValidTexture(paths) {
   const [validPath, setValidPath] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
-    const tryLoad = async (index) => {
+    const loader = new THREE.TextureLoader();
+    
+    const tryLoad = (index) => {
       if (index >= paths.length || cancelled) return;
-      const img = new Image();
-      img.onload = () => {
-        if (!cancelled) setValidPath(paths[index]);
-      };
-      img.onerror = () => tryLoad(index + 1);
-      img.src = paths[index];
+      
+      loader.load(
+        paths[index],
+        () => { if (!cancelled) setValidPath(paths[index]); }, // onLoad
+        undefined, // onProgress
+        () => tryLoad(index + 1) // onError
+      );
     };
+    
     tryLoad(0);
     return () => { cancelled = true; };
   }, [paths]);

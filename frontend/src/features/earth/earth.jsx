@@ -48,13 +48,12 @@ export const fragmentShader = `
   }
 `;
 
-export function The_Earth() {
+export function The_Earth({date}) {
   const dayTexture = useLoader(THREE.TextureLoader, '/2k_earth_daymap.jpg');
   const nightTexture = useLoader(THREE.TextureLoader, '/2k_earth_nightmap.jpg');
   const meshRef = useRef();
   const shaderRef = useRef();
 
-  // Ensure correct color encoding for display (helps night/day perceptual balance)
   dayTexture.encoding = THREE.sRGBEncoding;
   nightTexture.encoding = THREE.sRGBEncoding;
   dayTexture.needsUpdate = true;
@@ -63,8 +62,8 @@ export function The_Earth() {
   useFrame(() => {
     if (!meshRef.current || !shaderRef.current) return;
 
-    const now = new Date();
-    
+    const now = date.current;
+
     // Rotate the Earth mesh
     const gmst = satellite.gstime(now);
     meshRef.current.rotation.y = gmst;

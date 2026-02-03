@@ -1,7 +1,7 @@
 import { Satellite_render_test } from "./SatelliteRender";
 
 
-export function Batch_render_satellites({ satellites, positions }) { 
+export function Batch_render_satellites({ satellites, positions, dateRef, renderTrigger }) { 
   if (satellites.length === 0) {
     return null;
   }
@@ -14,6 +14,8 @@ export function Batch_render_satellites({ satellites, positions }) {
           satellite={data} 
           colour={null} 
           position={positions[index] || [0, 0, 0]}
+          dateRef ={dateRef}
+          renderTrigger = {renderTrigger}
         />
       ))}
     </>

@@ -1,0 +1,118 @@
+@import url("https://rsms.me/inter/inter.css");
+
+
+
+.dtp-box {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  background: #f2f2f2;
+  color: #202035;
+  padding: 10px 15px;
+  border-radius: 5px;
+  width: fit-content;
+  min-width: max-content;
+  user-select: none;
+}
+
+/* ── header row (always visible) ── */
+.dtp-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.dtp-time {
+  font-family: "Inter var", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.dtp-toggle {
+  font-size: 10px;
+  color: #888;
+}
+
+.dtp-custom-dot {
+  font-size: 10px;
+  color: #c60;
+  font-weight: 600;
+}
+
+/* ── expanded panel ── */
+.dtp-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #ddd;
+}
+
+.dtp-date-label {
+  font-size: 12px;
+  color: #555;
+}
+
+/* ── shared field label ("Set date & time", "Offset") ── */
+.dtp-field-label {
+  font-size: 11px;
+  color: #777;
+  margin-bottom: 3px;
+}
+
+/* ── datetime-local input ── */
+.dtp-input {
+  font-size: 13px;
+  color: #202035;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 3px 5px;
+}
+
+/* ── offset header row ── */
+.dtp-offset-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #777;
+  margin-bottom: 3px;
+}
+
+.dtp-offset-value {
+  color: #202035;
+  font-weight: 600;
+}
+
+/* ── range slider ── */
+.dtp-slider {
+  width: 100%;
+  cursor: pointer;
+}
+
+/* ── −24h / +24h axis labels ── */
+.dtp-slider-axis {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #999;
+  margin-top: 1px;
+}
+
+/* ── reset button ── */
+.dtp-reset {
+  align-self: flex-start;
+  background: #e2e2e2;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: #202035;
+  cursor: pointer;
+}
+
+.dtp-reset:hover {
+  background: #d8d8d8;
+}

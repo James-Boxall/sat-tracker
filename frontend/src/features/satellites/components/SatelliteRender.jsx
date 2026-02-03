@@ -8,7 +8,7 @@ import {SatelliteIcon} from './SatelliteIcons';
 
 
 
-export function Satellite_render_test({satellite: satelliteData, colour, position}) {
+export function Satellite_render_test({satellite: satelliteData, colour, position, dateRef, renderTrigger}) {
   // Remove the interval and position state from here
   const [hovered, setHovered] = useState(false);
   const [active, setActive] = useState(false);
@@ -78,7 +78,7 @@ export function Satellite_render_test({satellite: satelliteData, colour, positio
         <meshStandardMaterial color={'white'} transparent opacity={0} />
         */}
       </mesh>
-      <Orbit_path_new satellitedata={satelliteData} color={UsedColour} opacity={1}/>
+      <Orbit_path_new satellitedata={satelliteData} color={UsedColour} dateRef={dateRef} opacity={1} renderTrigger={renderTrigger}/>
     </group>
   );
 }

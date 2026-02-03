@@ -2,14 +2,15 @@ import * as satellite from 'satellite.js';
 import { SCALE }  from '../../../utils/constants.js';
 
 
-export function generateOrbitCoordinates(satellitedata, numPoints = 100) {
+export function generateOrbitCoordinates({satellitedata, dateRef, numPoints = 100}) {
+
 
     const satrec = satellite.twoline2satrec(satellitedata.tle_line1, satellitedata.tle_line2);
 
     const orbitalPeriod = satellitedata.calculated.orbital_period_minutes;
     
     // Get TLE epoch as starting time
-    const epoch = new Date();
+    const epoch = dateRef.current;
     
     const coordinates = [];
     
