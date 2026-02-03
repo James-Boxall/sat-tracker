@@ -8,14 +8,20 @@ import { Batch_render_satellites } from './features/satellites/components/BatchR
 import { GroupListItem} from './components/GroupListItem.jsx'
 import { DateTimePicker } from './components/TimeManager.jsx';
 import { SCALE, STARTUP_SATELLITES } from './utils/constants.js'
+import { ConnectionError } from './components/ConnectionError.jsx';
 import * as satellite from 'satellite.js';
 import "./App.css"
 
 
 function App() {
+  //Handling connection to server
+  const [connected, setConnected] = useState(false)
+  
+  
+  // handling UI element changes
   const [items, setItems] = useState([])
   const [input, setInput] = useState('')
-  const [stats, setStats] = useState({})
+  const [stats, setStats] = useState({"groups":{'Error: No groups loaded. check conection': 0}})
   const [randomInput, setRandomInput] = useState('')
   const [satellites, setSatellites] = useState([])
   const [positions, setPositions] = useState([])
@@ -51,28 +57,48 @@ function App() {
   }
   
 
-  // Load initial satellites and data on startup
-   useEffect(() => {
-    const loadInitialSatellites = async () => { // ISS and others
-      
+
+  // Retry connection on launch and if connection fails.
+  useEffect(() => {
+    const loadInitialSatellites = async () => {
       const satelliteData = await Promise.all(
         STARTUP_SATELLITES.map(id => fetchSatellite(id))
       );
-      
       setSatellites(satelliteData);
       setItems(STARTUP_SATELLITES);
-      
       const initialPositions = satelliteData.map(sat => getCurrentPosition(sat));
       setPositions(initialPositions);
     };
-     const loadStats = async () => {
-    const data = await fetchStats();  // await the Promise
-    setStats(data);
+
+    const loadStats = async () => {
+      const data = await fetchStats();
+      setStats(data);
     };
-    loadStats();
-    loadInitialSatellites();
-  }, []);
-  
+
+    const tryLoad = async () => {
+      try {
+        await loadStats();
+        await loadInitialSatellites();
+        setConnected(true); // only reached if both succeed
+      } catch (e) {
+        console.log('no connection');
+        console.log(e);
+      }
+    };
+
+    // Initial attempt
+    tryLoad();
+
+    // Retry every second if not connected
+    const interval = setInterval(() => {
+      if (!connected) {
+        tryLoad();
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [connected]);
+    
 
 
   // Memoize satrec objects
@@ -251,10 +277,13 @@ function App() {
         <Batch_render_satellites satellites={satellites} positions={positions} dateRef = {dateRef} renderTrigger = {datechange} />
       </Canvas>
       
-      <div style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 10, maxHeight: '80vh', overflowY: "auto", }}>
+      <div style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 10}}>
         <DateTimePicker dateRef={dateRef} customdate={customdate} bumpVersion={bumpVersion} />
       </div>
-      <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 10 }}>
+      <div style={{ position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 10}}>
+        <ConnectionError connected = {connected}/>
+      </div>
+      <div style={{ position: 'absolute', top: 20, left: 20, zIndex: 10, maxHeight: '80vh', overflowY: "auto",  }}>
         <div className="add-content-container">
           <div className="top-row">
             <h1 style = {{fontSize: 30}}>Active Satellites: {satellites.length}</h1>

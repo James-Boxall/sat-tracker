@@ -129,3 +129,25 @@ canvas {
   cursor: pointer;
   width: 80px; /* fixed width to align with buttons above */
 }
+
+
+.connection-text {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+  width: 25px;
+  height: 25px;
+  margin: 0px 15px ;
+  transform-origin: 50% 38.5%;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
