@@ -35,10 +35,6 @@ function App() {
   const dateRef = useRef(new Date())
 
   const TestFunction = () => {
-
-    dateRef.current = new Date("February 2, 2026 01:00:00")
-    customdate.current = false
-    setDatechange(prev => prev + 1)
   }
 
   function DateController({ dateRef, customdate }) {
@@ -75,21 +71,25 @@ function App() {
       setStats(data);
     };
 
+    let isLoading = false;
+
     const tryLoad = async () => {
+      if (isLoading) return; // skip if a request is already in flight
+      isLoading = true;
       try {
         await loadStats();
         await loadInitialSatellites();
-        setConnected(true); // only reached if both succeed
+        setConnected(true);
       } catch (e) {
         console.log('no connection');
         console.log(e);
+      } finally {
+        isLoading = false; // reset whether it succeeded or failed
       }
     };
 
-    // Initial attempt
     tryLoad();
 
-    // Retry every second if not connected
     const interval = setInterval(() => {
       if (!connected) {
         tryLoad();
