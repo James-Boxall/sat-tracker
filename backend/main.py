@@ -3,11 +3,13 @@ from flask_cors import CORS
 import json
 import numpy as np
 from pathlib import Path
-from  backend.tle_fetcher import TLEFetcher
 import threading
 from sgp4.api import Satrec, jday
 from datetime import datetime
 import os
+from tle_fetcher import TLEFetcher
+
+# Due to setup issues have to do two ways to import TLE fetcher. 
 
 app = Flask(__name__)
 
