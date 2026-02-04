@@ -280,7 +280,11 @@ function App() {
       </Canvas>
       
       <div style={{ position: 'absolute', top: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 10}}>
-        <DateTimePicker dateRef={dateRef} customdate={customdate} bumpVersion={bumpVersion} />
+        <DateTimePicker 
+        dateRef={dateRef} 
+        customdate={customdate} 
+        bumpVersion={bumpVersion} 
+        datechange={datechange}/>
       </div>
       <div style={{ position: 'absolute', bottom: 20, left: '50%', transform: 'translateX(-50%)', zIndex: 10}}>
         <ConnectionError connected = {connected}/>

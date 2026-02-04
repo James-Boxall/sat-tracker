@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import "./DateTimePicker.css";
 
 const pad = (n) => String(n).padStart(2, "0");
@@ -19,9 +19,25 @@ const toInputValue = (d) =>
 const HOURS_24 = 24 * 60 * 60 * 1000;
 
 export const DateTimePicker = ({ dateRef, customdate, bumpVersion }) => {
-  const [open, setOpen]                   = useState(false);
-  const [baseDate, setBaseDate]           = useState(() => new Date(dateRef.current));
+  const [open, setOpen]                     = useState(false);
+  const [baseDate, setBaseDate]             = useState(() => new Date(dateRef.current));
+  const [elapsedMs, setElapsedMs]           = useState(0);  
   const [sliderOffsetMs, setSliderOffsetMs] = useState(0);
+  const [slideradjust, setSlideradjust]     = useState(false);
+
+  // Clock ticks
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!slideradjust) {
+        setElapsedMs((prev) => {
+          const next = prev + 1000;
+          dateRef.current = new Date(baseDate.getTime() + next + sliderOffsetMs);
+          return next;
+        });
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [dateRef, slideradjust, baseDate, sliderOffsetMs]);
 
   const commit = useCallback((newDate, isCustom = true) => {
     dateRef.current   = newDate;
@@ -32,26 +48,36 @@ export const DateTimePicker = ({ dateRef, customdate, bumpVersion }) => {
   const handleSliderChange = (e) => {
     const ms = Number(e.target.value);
     setSliderOffsetMs(ms);
-    commit(new Date(baseDate.getTime() + ms));
+    commit(new Date(baseDate.getTime() + elapsedMs + ms));
   };
 
   const handleInputChange = (e) => {
     const parsed = new Date(e.target.value);
     if (!isNaN(parsed.getTime())) {
-      setBaseDate(parsed);
-      setSliderOffsetMs(0);
+      setBaseDate(parsed);      
+      setElapsedMs(0);          
+      setSliderOffsetMs(0);     
       commit(parsed);
     }
   };
 
+  const handleSliderClick = () => {
+    setSlideradjust(true);
+  };
+
+  const handleSliderClickOff = () => {
+    setSlideradjust(false);
+  };
+
   const handleReset = () => {
     const now = new Date();
-    setBaseDate(now);
-    setSliderOffsetMs(0);
+    setBaseDate(now);           
+    setElapsedMs(0);            
+    setSliderOffsetMs(0);       
     commit(now, false);
   };
 
-  const displayDate  = new Date(baseDate.getTime() + sliderOffsetMs);
+  const displayDate  = new Date(baseDate.getTime() + elapsedMs + sliderOffsetMs);
   const offsetHours  = sliderOffsetMs / (1000 * 60 * 60);
   const offsetLabel  = sliderOffsetMs === 0
     ? "0h"
@@ -60,14 +86,14 @@ export const DateTimePicker = ({ dateRef, customdate, bumpVersion }) => {
   return (
     <div className="dtp-box">
 
-      {/* header*/}
+      {/* ── header ── */}
       <div className="dtp-header" onClick={() => setOpen((o) => !o)}>
         <span className="dtp-time">{formatTime(displayDate)}</span>
         <span className="dtp-toggle">{open ? "▲" : "▼"}</span>
         {customdate.current && <span className="dtp-custom-dot">●</span>}
       </div>
 
-      {/* expanded panel */}
+      {/* ── expanded panel ── */}
       {open && (
         <div className="dtp-panel">
 
@@ -98,6 +124,8 @@ export const DateTimePicker = ({ dateRef, customdate, bumpVersion }) => {
               step={60000}
               value={sliderOffsetMs}
               onChange={handleSliderChange}
+              onMouseDown={handleSliderClick}
+              onMouseUp={handleSliderClickOff}
             />
             <div className="dtp-slider-axis">
               <span>−24h</span>
@@ -116,3 +144,5 @@ export const DateTimePicker = ({ dateRef, customdate, bumpVersion }) => {
     </div>
   );
 };
+
+export default DateTimePicker;
