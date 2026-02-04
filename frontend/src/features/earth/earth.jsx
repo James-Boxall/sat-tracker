@@ -76,7 +76,7 @@ export function The_Earth({date}) {
     const meanAnomaly = (357.528 + 0.9856003 * since2000) % 360;
     const rad = Math.PI / 180;
     const lambda = meanLongitude + 1.915 * Math.sin(meanAnomaly * rad) +
-                   0.020 * Math.sin(2 * meanAnomaly * rad);
+                  0.020 * Math.sin(2 * meanAnomaly * rad);
     const obliquity = 23.439 - 0.0000004 * since2000;
 
     // ECI Coordinates (Z is North, X is Vernal Equinox)
@@ -84,7 +84,11 @@ export function The_Earth({date}) {
     const Y = Math.cos(obliquity * rad) * Math.sin(lambda * rad);
     const Z = Math.sin(obliquity * rad) * Math.sin(lambda * rad);
 
+    // Update the uniform value
     shaderRef.current.uniforms.lightDirection.value.set(X, Z, -Y).normalize();
+    
+    // Mark the material as needing an update
+    shaderRef.current.needsUpdate = true;
   });
 
   return (

@@ -55,7 +55,7 @@ class TLEFetcher:
     def __init__(self, cache_dir: str = "data/tles"):
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
-        self.cache_duration = timedelta(hours=12)  # Refresh TLEs every 12 hours
+        self.cache_duration = timedelta(hours=12)  # TLE refresh timer
     
     def _get_cache_path(self, group: str) -> Path:
         return self.cache_dir / f"{group}.json"
@@ -152,11 +152,7 @@ class TLEFetcher:
             response = requests.get(self.BASE_URL, params=params, timeout=30)
             response.raise_for_status()
             
-            # Parse TLE text format
-            # Format is 3 lines per satellite:
-            # Line 0: Satellite name
-            # Line 1: TLE line 1
-            # Line 2: TLE line 2
+    
             lines = response.text.strip().split('\n')
             
             satellites = []
@@ -172,7 +168,7 @@ class TLEFetcher:
                 elements1 = self._parse_tle_line1(line1)
                 elements2 = self._parse_tle_line2(line2)
                 
-                # Combine everything
+                # Combine
                 satellite = {
                     "name": name,
                     "norad_id": elements1.get("norad_id", 0),
@@ -189,7 +185,7 @@ class TLEFetcher:
                 epoch_year = elements1.get("epoch_year", 0)
                 epoch_day = elements1.get("epoch_day", 0)
                 if epoch_year and epoch_day:
-                    # Convert 2-digit year to 4-digit (assume 1957-2056 range)
+                    
                     full_year = 2000 + epoch_year if epoch_year < 57 else 1900 + epoch_year
                     epoch_date = datetime(full_year, 1, 1) + timedelta(days=epoch_day - 1)
                     satellite["epoch"] = epoch_date.isoformat()
@@ -236,10 +232,8 @@ class TLEFetcher:
 
 
 if __name__ == "__main__":
-    # Test the fetcher
     fetcher = TLEFetcher()
     
-    # Fetch a few interesting groups
     test_groups = ["stations", "gps-ops"]
     
     for group in test_groups:
@@ -256,11 +250,3 @@ if __name__ == "__main__":
             print(f"  Inclination: {sat.get('inclination', 'N/A')}°")
             print(f"  Mean Motion: {sat.get('mean_motion', 'N/A')} rev/day")
             print(f"  Eccentricity: {sat.get('eccentricity', 'N/A')}")
-    
-    # Show all counts
-    print("\n" + "="*60)
-    print("=== All Groups ===")
-    counts = fetcher.get_satellite_count()
-    for group, count in sorted(counts.items(), key=lambda x: x[1], reverse=True):
-        if count > 0:
-            print(f"{group}: {count} satellites")

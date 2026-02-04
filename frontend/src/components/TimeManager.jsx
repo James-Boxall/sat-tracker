@@ -121,7 +121,7 @@ export const DateTimePicker = ({ dateRef, customdate, bumpVersion }) => {
               className="dtp-slider"
               min={-HOURS_24}
               max={HOURS_24}
-              step={60000}
+              step={1000}
               value={sliderOffsetMs}
               onChange={handleSliderChange}
               onMouseDown={handleSliderClick}
