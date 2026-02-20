@@ -9,7 +9,7 @@ import { GroupListItem} from './components/GroupListItem.jsx'
 import { DateTimePicker } from './components/TimeManager.jsx';
 import { SCALE, STARTUP_SATELLITES } from './utils/constants.js'
 import { ConnectionError } from './components/ConnectionError.jsx';
-import { Analytics } from "@vercel/analytics/next";
+import { Analytics } from "@vercel/analytics/react";
 import * as satellite from 'satellite.js';
 import "./App.css"
 
@@ -268,6 +268,8 @@ function App() {
   }
 
   return (
+
+    
     
     <div style={{ width: '100vw', height: '100vh', background: '#1b1e2b' }}>
       <Analytics/>
