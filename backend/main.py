@@ -225,9 +225,14 @@ def internal_error(error):
     return jsonify({"error": "Internal server error"}), 500
 
 
-print("Fetching initial TLE data...")
-fetcher.fetch_all_groups(force_refresh=False)
-print("TLE data loaded.")
+def background_startup_fetch():
+    print("Fetching initial TLE data in background...")
+    fetcher.fetch_all_groups(force_refresh=False)
+    print("TLE data loaded.")
+
+thread = threading.Thread(target=background_startup_fetch)
+thread.daemon = True
+thread.start()
 
 
 if __name__ == "__main__":
