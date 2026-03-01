@@ -52,7 +52,7 @@ class TLEFetcher:
         "education": "Education satellites"
     }
     
-    def __init__(self, cache_dir: str = "data/tles"):
+    def __init__(self, cache_dir: str = "backend/data/tles"):
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         self.cache_duration = timedelta(hours=12)  # TLE refresh timer
