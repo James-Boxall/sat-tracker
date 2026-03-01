@@ -58,6 +58,7 @@ class TLEFetcher:
             cache_dir = base / "data" / "tles"
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
+        self.cache_duration = timedelta(hours=24)  # Cache validity duration
         
     def _get_cache_path(self, group: str) -> Path:
         return self.cache_dir / f"{group}.json"
