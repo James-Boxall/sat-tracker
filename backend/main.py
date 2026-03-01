@@ -235,11 +235,17 @@ def debug():
     import os
     cwd = os.getcwd()
     cache_path = Path("data/tles")
+    
+    file_sizes = {}
+    if cache_path.exists():
+        for f in os.listdir(cache_path):
+            file_sizes[f] = os.path.getsize(cache_path / f)
+    
     return jsonify({
         "cwd": cwd,
         "cache_path_absolute": str(cache_path.resolve()),
         "cache_exists": cache_path.exists(),
-        "files": os.listdir(cache_path) if cache_path.exists() else []
+        "file_sizes": file_sizes
     })
 
 thread = threading.Thread(target=background_startup_fetch)
