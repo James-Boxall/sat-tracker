@@ -3,7 +3,7 @@ import json
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List
-import re
+import tempfile
 import sgp4
 
 class TLEFetcher:
@@ -193,13 +193,24 @@ class TLEFetcher:
                 satellites.append(satellite)
             
             # Cache the data
-            cache_path = self._get_cache_path(group)
-            with open(cache_path, 'w') as f:
-                json.dump(satellites, f, indent=2)
+            if satellites:
+                cache_path = self._get_cache_path(group)
+                with tempfile.NamedTemporaryFile('w', dir=self.cache_dir, delete=False, suffix='.tmp') as tmp:
+                    json.dump(satellites, tmp, indent=2)
+                    tmp_path = tmp.name
+                Path(tmp_path).replace(cache_path)
+                print(f"Cached {len(satellites)} satellites for group: {group}")
+            else:
+                print(f"Warning: No satellites parsed for {group}, keeping existing cache")
+                # Return existing cache if available rather than empty list
+                cache_path = self._get_cache_path(group)
+                if cache_path.exists():
+                    with open(cache_path, 'r') as f:
+                        return json.load(f)
             
-            print(f"Cached {len(satellites)} satellites for group: {group}")
             return satellites
-            
+        
+    
         except requests.RequestException as e:
             print(f"Error fetching TLEs for {group}: {e}")
             # Try to return cached data even if expired
