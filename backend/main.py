@@ -230,6 +230,18 @@ def background_startup_fetch():
     fetcher.fetch_all_groups(force_refresh=False)
     print("TLE data loaded.")
 
+@app.route('/api/debug', methods=['GET'])
+def debug():
+    import os
+    cwd = os.getcwd()
+    cache_path = Path("data/tles")
+    return jsonify({
+        "cwd": cwd,
+        "cache_path_absolute": str(cache_path.resolve()),
+        "cache_exists": cache_path.exists(),
+        "files": os.listdir(cache_path) if cache_path.exists() else []
+    })
+
 thread = threading.Thread(target=background_startup_fetch)
 thread.daemon = True
 thread.start()
