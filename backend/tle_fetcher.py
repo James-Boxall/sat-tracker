@@ -52,11 +52,13 @@ class TLEFetcher:
         "education": "Education satellites"
     }
     
-    def __init__(self, cache_dir: str = "backend/data/tles"):
+    def __init__(self, cache_dir: str = None):
+        if cache_dir is None:
+            base = Path(os.path.dirname(os.path.abspath(__file__)))
+            cache_dir = base / "data" / "tles"
         self.cache_dir = Path(cache_dir)
         self.cache_dir.mkdir(parents=True, exist_ok=True)
-        self.cache_duration = timedelta(hours=12)  # TLE refresh timer
-    
+        
     def _get_cache_path(self, group: str) -> Path:
         return self.cache_dir / f"{group}.json"
     
