@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List
 import tempfile
-import sgp4
+import os
 
 class TLEFetcher:
     """Fetches and caches TLE data from CelesTrak"""
@@ -64,11 +64,12 @@ class TLEFetcher:
         cache_path = self._get_cache_path(group)
         if not cache_path.exists():
             return False
-        
-        # Check if cache is older than cache_duration
+        # On Render, never consider cache stale (CelesTrak blocks cloud IPs)
+        if os.environ.get("RENDER"):
+            return True
         cache_time = datetime.fromtimestamp(cache_path.stat().st_mtime)
         return datetime.now() - cache_time < self.cache_duration
-    
+        
     def _parse_tle_scientific(self, s: str) -> float:
         """Parse TLE scientific notation format (e.g., '+21756-3' -> 0.21756e-3)"""
         if s[1:-2] == '00000':

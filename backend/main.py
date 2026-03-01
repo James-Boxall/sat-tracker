@@ -227,10 +227,15 @@ def internal_error(error):
 
 def background_startup_fetch():
     print("Checking TLE cache...")
-    # Only fetch groups that have no cache at all
-    for group in fetcher.GROUPS.keys():
-        if not fetcher._get_cache_path(group).exists():
+    missing = [g for g in fetcher.GROUPS.keys() 
+               if not fetcher._get_cache_path(g).exists()]
+    
+    if missing:
+        print(f"Missing cache for: {missing}")
+        for group in missing:
             fetcher.fetch_group(group)
+    else:
+        print("All cache files present, skipping fetch.")
 
 @app.route('/api/debug', methods=['GET'])
 def debug():
