@@ -226,9 +226,11 @@ def internal_error(error):
 
 
 def background_startup_fetch():
-    print("Fetching initial TLE data in background...")
-    fetcher.fetch_all_groups(force_refresh=False)
-    print("TLE data loaded.")
+    print("Checking TLE cache...")
+    # Only fetch groups that have no cache at all
+    for group in fetcher.GROUPS.keys():
+        if not fetcher._get_cache_path(group).exists():
+            fetcher.fetch_group(group)
 
 @app.route('/api/debug', methods=['GET'])
 def debug():
