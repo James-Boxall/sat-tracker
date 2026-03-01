@@ -226,7 +226,12 @@ def internal_error(error):
 
 
 def background_startup_fetch():
-    print("Checking TLE cache...")
+    import os
+    print(f"Background thread cwd: {os.getcwd()}")
+    print(f"Cache dir: {fetcher.cache_dir}")
+    print(f"Cache dir absolute: {fetcher.cache_dir.resolve()}")
+    print(f"Cache dir exists: {fetcher.cache_dir.exists()}")
+    
     missing = [g for g in fetcher.GROUPS.keys() 
                if not fetcher._get_cache_path(g).exists()]
     
